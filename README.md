@@ -29,7 +29,7 @@
 ### 示例
 
 ```yml
-name: hello-github-actions
+name: CI
 
 on: [push]
 
