@@ -42,7 +42,7 @@ jobs:
         with:
           node-version: 18
           cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
+      - run: corepack enable && pnpm install --frozen-lockfile
       - run: pnpm build
 ```
 
