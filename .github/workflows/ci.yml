@@ -1,3 +1,5 @@
+name: CI
+
 on:
   - push
   - pull_request
@@ -36,3 +38,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
+
+      - name: Build
+        run: pnpm run build
