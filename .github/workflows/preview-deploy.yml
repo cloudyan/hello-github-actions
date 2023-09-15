@@ -1,6 +1,6 @@
 # Each PR will build preview site that help to check code is work as expect.
 
-name: Preview Preview
+name: Preview Deploy
 
 on:
   workflow_run:
