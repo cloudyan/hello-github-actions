@@ -49,6 +49,7 @@ jobs:
         id: deploy
         run: |
           export DEPLOY_DOMAIN=https://preview-${{ steps.pr.outputs.id }}-hello-cicd.surge.sh
+          ls ./
           npx surge --project ./ --domain $DEPLOY_DOMAIN --token ${{ secrets.SURGE_TOKEN }}
 
       - name: update status comment
