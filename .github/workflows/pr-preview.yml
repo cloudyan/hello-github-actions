@@ -1,12 +1,12 @@
 # Each PR will build preview site that help to check code is work as expect.
 
-name: Preview Deploy
+name: PR Preview
 
 on:
-  push:
-    branches:
-      - main
-      - step*
+  workflow_run:
+    workflows: ["PR Build"]
+    types:
+      - completed
 
 permissions:
   contents: read
@@ -17,7 +17,8 @@ jobs:
       actions: read  # for dawidd6/action-download-artifact to query and download artifacts
       issues: write  # for actions-cool/maintain-one-comment to modify or create issue comments
       pull-requests: write  # for actions-cool/maintain-one-comment to modify or create PR comments
-    name: deploy preview
+
+    name: preview deploy
     runs-on: ubuntu-latest
     if: >
       github.event.workflow_run.event == 'pull_request' &&
