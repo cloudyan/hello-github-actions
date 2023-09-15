@@ -5,7 +5,7 @@ on:
   - pull_request
 
 jobs:
-  cache-and-install:
+  install-lint-test:
     runs-on: ubuntu-latest
 
     steps:
