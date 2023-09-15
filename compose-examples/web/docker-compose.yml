@@ -1,0 +1,14 @@
+version: '3'
+services:
+
+  # 访问本地 5000 端口，每次刷新页面，计数就会加 1。
+  web:
+    build: .
+    # build:
+    #   context: .
+    #   dockerfile: config/5.dockerfile
+    ports:
+      - "5000:5000"
+
+  redis:
+    image: "redis:alpine"
