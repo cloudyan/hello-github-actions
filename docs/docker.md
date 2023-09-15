@@ -433,7 +433,7 @@ services:
   web:
     build:
       context: .
-      dockerfile: config/5.dockerfile
+      dockerfile: dockerfile-examples/5.dockerfile
     ports:
       - 4000:80
 ```
