@@ -17,8 +17,6 @@
     - [多阶段构建](#多阶段构建)
     - [容器编排](#容器编排)
   - [CI/CD](#cicd)
-    - [持续集成](#持续集成)
-    - [CD 持续交付/持续部署](#cd-持续交付持续部署)
 
 ## Docker 概念基础
 
@@ -33,6 +31,8 @@ Docker是一种轻量级的虚拟化技术，同时是一个开源的应用容�
 Docker vs 传统虚拟化
 
 ![Docker vs VMs(virtual Machines)](./assets/docker-vs-vms.png)
+
+> Docker 容器不是虚拟机，它就是进程。
 
 ### 为什么要用 Docker
 
@@ -86,7 +86,6 @@ linux 操作系统提供了 namespace 机制，可以给进程、用户、网络
   - 镜像层
   - 缓存层
   - 查看创建镜像层的命令 `docker history hello:1`
-
 
 ## Docker 入门
 
@@ -159,6 +158,8 @@ docker run \
 
 ### Dockerfile 构建镜像
 
+Dockerfile 是一个文本文件，其内包含了一条条的 **指令(Instruction)**，每一条指令构建一层，因此每一条指令的内容，就是描述该层应当如何构建。
+
 使用 Dockerfile 指令实现自定义镜像
 
 ```bash
@@ -229,7 +230,7 @@ Dockerfile 中不建议放置复杂的逻辑，而且它语法支持也很有限
   - 把宿主机的文件复制到容器内
   - `ADD` 会把 `tar.gz` 解压然后复制到容器内
   - `COPY` 没有解压，复制到容器内
-  - 推荐使用 `COPY`，因为该之类语义明确
+  - 推荐使用 `COPY`，因为该指令语义明确
 - `CMD` vs `ENTRYPOINT`
   - 用 `CMD` 的时候，启动命令是可以重写的，将 Dockerfile 中 `CMD` 命令重写
   - 使用 `ENTRYPOINT` 不能重新启动命令
@@ -238,9 +239,105 @@ Dockerfile 中不建议放置复杂的逻辑，而且它语法支持也很有限
   - `ARG` 所设置是构建时的环境变量，在将来容器运行时是不会存在这些环境变量的。
   - 不要在 `ARG` 放置敏感信息，因为 `docker history` 可以看到构建的过程
 
+一些疑问？
+
+docker 容器跑着为啥会挂掉？为什么容器启动不起来？
+
+> docker 不是虚拟机，容器就是进程。既然是进程，那么在启动容器的时候，需要指定所运行的程序及参数。
+
+`CMD` 指令就是用于指定默认的容器主进程的启动命令的。在运行时可以指定新的命令来替代镜像设置中的这个默认命令。
+
+而这个启动命令会作为 pid 为 1 的进程存在，该进程退出，容器即终止。
+
+比如，ubuntu 镜像默认的 `CMD` 是 `/bin/bash`，如果我们直接 `docker run -it ubuntu` 的话，会直接进入 bash。
+
+为什么有启动了服务，还是不行？
+
+```yml
+# 错误方式
+CMD service nginx start
+
+# 正确方式
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+Docker 不是虚拟机，容器中的应用都应该以前台执行，而不是像虚拟机、物理机里面那样，用 `systemd` 去启动后台服务，容器内没有后台服务的概念。
+
+```bash
+# Nginx 容器示例
+docker history hello:1
+docker history hello:1 --no-trunc
+docker history hello:1 --format "table {{.CreatedBy}}" --no-trunc
+```
+
+可以看到 `CMD ["nginx", "-g", "daemon off;"]`
+
+**详解 `CMD` vs `ENTRYPOINT`**
+
+> `CMD` 指令就是用于指定默认的容器主进程的启动命令的。在运行时可以指定新的命令来替代镜像设置中的这个默认命令。
+> `ENTRYPOINT` 也是用来指定容器启动程序及参数，有了这个，CMD 的含义就变了 `<ENTRYPOINT> "<CMD>"`
+
+- Dockerfile 中可以有多个 `ENTRYPOINT` 指令，但只有最后一个生效。
+- Dockerfile 中可以有多个 `CMD` 指令，但只有最后一个生效。
+
+格式支持差异
+
+- `ENTRYPOINT` 指令两种格式
+  - `shell` 格式：`ENTRYPOINT command param1 param2`
+  - `exec` 格式：`ENTRYPOINT ["executable", "param1", "param2"]`，相当于 `["/bin/sh", "-c", "command", "param1", "param2"]`
+  - 注意: 当 `shell` 模式时，`CMD` 和 `docker run` 后面的指令传不进来
+- `CMD` 指令三种格式
+  - `shell` 格式：`CMD <命令>`
+  - `exec` 格式：`CMD ["可执行文件", "参数1", "参数2"...]`
+  - 参数列表格式：`CMD ["参数1", "参数2"...]`。相当于给 `ENTRYPOINT` 指令附加参数
+
+覆盖方式差异
+
+- `docker run` 后面的指令会覆盖掉 `CMD`
+- `docker run` 时使用参数 `--entrypoint` 覆盖掉 `ENTRYPOINT`，如 `docker run --entrypoint /bin/bash`
+
+当同时存在 ENTRYPOINT 和 CMD 时
+
+1. 当存在 `ENTRYPOINT` 时且为 `shell` 格式时，`CMD` 和 `docker run` 后面的命令无效
+2. 当存在 `ENTRYPOINT` 时且为 `exec` 格式时，`CMD` 或 `docker run` 后面的指令作为 `ENTRYPOINT` 的参数使用
+
+
+示例
+
+```bash
+# 示例 1
+ENTRYPOINT ["echo"]
+CMD ["echo", "hello"] # exec 格式
+# 以上指定相当于
+echo echo hello
+# 输出 echo hello
+
+
+# 示例 2
+ENTRYPOINT ["echo"]
+CMD echo hello # shell 格式，相当于 ["/bin/sh", "-c", "echo", "hello"]
+
+# 以上指令相当于
+# echo /bin/sh -c echo hello
+# 输出 /bin/sh -c echo hello
+
+# 示例 3
+curl -s https://baidu.com
+# 附加参数实现
+curl -s https://baidu.com -i
+
+ENTRYPOINT ["curl", "-s", "https://baidu.com"]
+# docker run xxx -i
+CMD ["curl", "-s", "https://baidu.com"]
+# docker run xxx curl -s https://baidu.com -i
+```
+
 构建镜像
 
 ```bash
+# 格式
+docker build [OPTIONS] PATH | URL | -
+
 # 构建镜像
 docker build -f dockerfile-examples/1.dockerfile -t hello:1 .
 ```
@@ -263,6 +360,9 @@ docker build -f dockerfile-examples/1.dockerfile -t hello:1 .
 运行容器
 
 ```bash
+# 格式
+docker run [OPTIONS] IMAGE [COMMAND] [ARG...]
+
 # 运行容器
 docker run -d --name hello-1 -p 8090:80 hello:1
 docker run -d --name hello-3 -p 5174:5173 hello:3
@@ -321,7 +421,18 @@ RUN npm build                           # Run build
 
 ### 多阶段构建
 
-适用多阶段构建主要有两个主要原因
+前面我们实现了一个 Dockerfile 构建一个镜像，实现前端服务部署
+
+我们有两种做法
+
+1. 用一个 Dockerfile, 包含前端编译构建、静态服务
+2. 用两个 Dockerfile, 一个做前端编译构建，另一个做静态服务
+
+但这样有些问题，方案一，导致镜像体积大，开销浪费；方案二维护部署麻烦
+
+为解决以上问题，Docker 从 v17.05 开始支持多阶段构建。
+
+使用多阶段构建的两个主要原因
 
 1. 创建占用空间较小的最终映像
 2. 并行运行生成步骤，使生成管道更快、更高效
@@ -452,8 +563,4 @@ Kubernetes 是一个开源的容器编排引擎，用来对容器化应用进行
 
 ## CI/CD
 
-### 持续集成
-
-
-
-### CD 持续交付/持续部署
+- [ci-cd](./ci-cd.md)
