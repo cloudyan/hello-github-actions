@@ -28,9 +28,6 @@
 
 ![cd](./assets/cicd-03.png)
 
-
-github CI/CD
-
 ### CI/CD 工作流程
 
 <!-- ![old CICD-Workflow](./assets/gitlab_workflow_example.png) -->
@@ -38,3 +35,9 @@ github CI/CD
 Gitlab CI/CD
 
 ![gitlab-CICD-workflow](./assets/gitlab_workflow_example_extended_v12_3.png)
+
+### 操作实践
+
+以 github actions 为例
+
+- [github-acions](./github-actions.md)
