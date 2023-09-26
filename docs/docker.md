@@ -390,8 +390,8 @@ Docker 的构建如下
 # syntax=docker/dockerfile:1
 FROM node
 WORKDIR /app
-COPY . .          # Copy over all files in the current directory
-RUN npm install   # Install dependencies
+COPY . .          # Copy over all files in the current directory 🔃
+RUN npm install   # Install dependencies ❌
 RUN npm build     # Run build
 ```
 
@@ -403,9 +403,9 @@ RUN npm build     # Run build
 # syntax=docker/dockerfile:1
 FROM node
 WORKDIR /app
-COPY package.json package-lock.json .   # Copy package management files
-RUN npm install                         # Install dependencies
-COPY . .                                # Copy over project files
+COPY package.json package-lock.json .   # Copy package management files  ✅
+RUN npm install                         # Install dependencies ✅
+COPY . .                                # Copy over project files 🔃
 RUN npm build                           # Run build
 ```
 

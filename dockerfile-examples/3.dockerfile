@@ -17,7 +17,7 @@ COPY . .
 EXPOSE 5173
 
 # CMD ["serve", "dist", "-l", "5173"]
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "build"]
 # CMD ["sleep", "10m"]
 
 # docker build -f dockerfile-examples/3.dockerfile -t hello:3 .
