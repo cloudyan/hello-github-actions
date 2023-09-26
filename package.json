@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "coverage": "vitest run --coverage",
     "test": "vitest",
-    "test:ci": "CI=true vitest",
+    "test:ci": "CI=true vitest --coverage",
     "test:ui": "vitest --ui"
   },
   "dependencies": {
