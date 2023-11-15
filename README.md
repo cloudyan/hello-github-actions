@@ -2,6 +2,12 @@
 
 一次技术分享
 
+目录
+
+1. [Docker 部分](./docs/docker.md)
+2. [CI/CD 部分](./docs/ci-cd.md)
+3. [github actions 实践](./docs/github-actions.md)
+
 内容规划
 
 1. Docker 概念基础
@@ -25,8 +31,4 @@
    2. github actions ✅
    3. gitlab runner
 
-详细文档
 
-1. [Docker 部分](./docs/docker.md)
-2. [CI/CD 部分](./docs/ci-cd.md)
-3. [github actions 实践](./docs/github-actions.md)
