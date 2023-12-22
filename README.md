@@ -28,7 +28,7 @@
    3. CD 持续交付/部署
 4. 前端的 CI/CD 实践
    1. jenkins 流水线
-   2. github actions ✅
+   2. github actions 示例
    3. gitlab runner
 
 

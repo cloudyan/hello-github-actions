@@ -191,7 +191,7 @@ COPY dist /usr/share/nginx/html
 
 ```bash
 # FROM node:latest
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -439,7 +439,7 @@ RUN npm build                           # Run build
 
 ```bash
 # 多阶段构建
-FROM node:18-alpine as builder
+FROM node:20-alpine as builder
 
 WORKDIR /app
 
@@ -464,7 +464,7 @@ COPY --from=builder app/dist /usr/share/nginx/html
 下面虚拟一个例子
 
 ```bash
-FROM node:18-alpine as base
+FROM node:20-alpine as base
 
 WORKDIR /app
 
