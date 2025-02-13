@@ -97,14 +97,6 @@ networks:
   frontend:
   backend:
 
-# 虽然服务被拆分到不同的 docker-compose 文件中，但可以通过 Docker 网络将它们连接起来。
-# 再拆分的 compose 文件中，分别添加 external 网络配置，将服务连接到相应的网络。
-# networks:
-#   frontend-network:
-#     external: true  # 使用外部网络
-#   backend-network:
-#     external: true  # 使用外部网络
-
 volumes:
   nginx-certs:
     driver: local

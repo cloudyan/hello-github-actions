@@ -29,6 +29,26 @@ user -> nginx (/) -> vue(dist)
   - certbot-webroot
 - docker-backups
 
+## 拆分
+
+将所有服务放在一个 docker-compose 文件中确实可以方便管理和部署，但随着系统复杂度的增加，这种方式可能会导致一些问题，比如服务之间的耦合度过高、资源分配不合理、维护成本增加等。为了增强系统的稳定性、可维护性和可扩展性，可以考虑以下优化设计方案：
+
+### 分层架构设计
+
+将系统按照功能模块划分为不同的层级，例如：
+
+- 前端服务：如 nginx 和 certbot。
+- 后端服务：如 api（Node.js 应用）。
+- 数据库服务：如 mongo 和 redis。
+- 辅助服务：如 mongo-backup。
+
+虽然服务被拆分到不同的 docker-compose 文件中，但可以通过 Docker 网络将它们连接起来。
+
+```bash
+docker network create frontend-network
+docker network create backend-network
+```
+
 ### 2. 路由规则
 
 - `/api/*`: 转发到 NestJS 后端服务（端口 3000）
