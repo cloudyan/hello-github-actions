@@ -16,18 +16,20 @@ user -> nginx (/) -> vue(dist)
 - 网关层：Nginx 作为统一入口，配置 SSL 证书自动续期
 - 前端服务层：Vue 静态资源部署
 - 后端服务层：NestJS API 服务
-- 数据服务层：MongoDB 数据库和 Redis 缓存服务，包含自动备份功能
+- 数据服务层：MongoDB 数据库
+- 辅助服务层：数据自动备份功能
 
 ### 2. 数据持久化
+
+持久化映射的数据目录结构：
 
 - docker-apps
   - frontend-dist：前端构建产物
   - backend-dist：后端构建产物
   - mongo-data：MongoDB 数据存储
-  - mongo-backup：MongoDB 数据备份
-  - redis-data：Redis 数据存储
-  - nginx-certs：SSL 证书（对应 nginx/certs）
-  - nginx-conf：Nginx 配置（对应 nginx/nginx.conf）
+  - nginx/
+    - certs：SSL 证书
+    - nginx.conf：Nginx 配置
   - certbot-webroot：SSL 证书自动续期
 - docker-backups
   - mongo-backup：MongoDB 数据备份
@@ -40,19 +42,25 @@ user -> nginx (/) -> vue(dist)
   - 提供统一的访问入口
   - 管理 SSL 证书的自动续期
   - 处理请求路由和负载均衡
+  - 对应 gateway.nginx.conf 配置文件
 
 - docker-compose.frontend.yml：前端服务层（Vue）
   - 部署静态资源
   - 通过 frontend-network 与网关层通信
+  - 对应 frontend.nginx.conf 配置文件
 
 - docker-compose.backend.yml：后端服务层（NestJS）
   - 提供 API 服务
   - 通过 backend-network 与网关层和数据层通信
 
-- docker-compose.database.yml：数据服务层（MongoDB + Redis）
-  - 提供数据存储和缓存服务
+- docker-compose.database.yml：数据服务层（MongoDB）
+  - 提供数据存储服务
   - 通过 database-network 与后端服务层通信
+
+- docker-compose.backup.yml：数据备份服务
   - 包含数据备份服务
+  - 通过 database-network 与数据服务层通信
+  - 备份文件存储到 docker-backups 中
 
 服务间通过 Docker 网络实现通信：
 

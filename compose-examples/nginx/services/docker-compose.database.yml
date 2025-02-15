@@ -9,14 +9,6 @@ services:
     networks:
       - database-network
 
-  redis:
-    image: redis:alpine
-    container_name: redis-cache
-    volumes:
-      - redis-data:/data
-    networks:
-      - database-network
-
 networks:
   database-network:
     external: true
@@ -28,9 +20,3 @@ volumes:
       type: none
       o: bind
       device: ~/docker-apps/mongo-data
-  redis-data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ~/docker-apps/redis-data
