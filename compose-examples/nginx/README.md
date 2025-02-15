@@ -11,64 +11,83 @@ user -> nginx (/) -> vue(dist)
 
 ### 1. 服务架构
 
-- 前端服务：Vue 静态资源部署在 Nginx
-- 后端服务：NestJS API 服务
-- 网关层：Nginx 作为统一入口
-- 数据库：MongoDB@4.4
-- 缓存服务：Redis
+系统采用分层架构设计，按功能模块拆分为以下几层：
 
-### 数据持久化
+- 网关层：Nginx 作为统一入口，配置 SSL 证书自动续期
+- 前端服务层：Vue 静态资源部署
+- 后端服务层：NestJS API 服务
+- 数据服务层：MongoDB 数据库和 Redis 缓存服务，包含自动备份功能
+
+### 2. 数据持久化
 
 - docker-apps
-  - frontend-dist
-  - backend-dist
-  - mongo-data
-  - redis-data
-  - nginx-certs 对应 nginx/certs
-  - nginx-conf 对应 nginx/nginx.conf
-  - certbot-webroot
+  - frontend-dist：前端构建产物
+  - backend-dist：后端构建产物
+  - mongo-data：MongoDB 数据存储
+  - mongo-backup：MongoDB 数据备份
+  - redis-data：Redis 数据存储
+  - nginx-certs：SSL 证书（对应 nginx/certs）
+  - nginx-conf：Nginx 配置（对应 nginx/nginx.conf）
+  - certbot-webroot：SSL 证书自动续期
 - docker-backups
+  - mongo-backup：MongoDB 数据备份
 
-## 拆分
+### 3. 服务拆分
 
-将所有服务放在一个 docker-compose 文件中确实可以方便管理和部署，但随着系统复杂度的增加，这种方式可能会导致一些问题，比如服务之间的耦合度过高、资源分配不合理、维护成本增加等。为了增强系统的稳定性、可维护性和可扩展性，可以考虑以下优化设计方案：
+为了增强系统的稳定性、可维护性和可扩展性，采用分层架构设计，每层服务使用独立的 docker-compose 文件管理：
 
-### 分层架构设计
+- docker-compose.gateway.yml：网关层服务（Nginx + Certbot）
+  - 提供统一的访问入口
+  - 管理 SSL 证书的自动续期
+  - 处理请求路由和负载均衡
 
-将系统按照功能模块划分为不同的层级，例如：
+- docker-compose.frontend.yml：前端服务层（Vue）
+  - 部署静态资源
+  - 通过 frontend-network 与网关层通信
 
-- 前端服务：如 nginx 和 certbot。
-- 后端服务：如 api（Node.js 应用）。
-- 数据库服务：如 mongo 和 redis。
-- 辅助服务：如 mongo-backup。
+- docker-compose.backend.yml：后端服务层（NestJS）
+  - 提供 API 服务
+  - 通过 backend-network 与网关层和数据层通信
 
-虽然服务被拆分到不同的 docker-compose 文件中，但可以通过 Docker 网络将它们连接起来。
+- docker-compose.database.yml：数据服务层（MongoDB + Redis）
+  - 提供数据存储和缓存服务
+  - 通过 database-network 与后端服务层通信
+  - 包含数据备份服务
+
+服务间通过 Docker 网络实现通信：
 
 ```bash
-docker network create frontend-network
-docker network create backend-network
+# 创建网络
+docker network create frontend-network  # 前端与网关层通信
+docker network create backend-network   # 后端与网关层通信
+docker network create database-network  # 后端与数据层通信
 ```
 
-### 2. 路由规则
+### 4. 路由规则
 
 - `/api/*`: 转发到 NestJS 后端服务（端口 3000）
 - `/*`: 指向前端构建产物目录（端口 80）
 
-### 3. 性能优化
+### 5. 性能优化
 
 - 启用 GZIP 压缩
 - 配置静态资源缓存策略
 - 开启 HTTP2 支持
 - 配置 keepalive 连接
 
-### 4. 安全措施
+### 6. 安全措施
 
 - 配置安全相关的 HTTP 头
 - 限制上传文件大小
 - 关闭服务器版本显示
+- 数据自动备份策略
+  - MongoDB 数据每 24 小时自动备份一次
+  - 备份文件按时间戳存储
 
-### 5. 高可用配置
+### 7. 高可用配置
 
 - 自动选择工作进程数
 - 配置连接超时时间
 - 错误页面处理
+- 服务健康检查
+- 容器自动重启策略

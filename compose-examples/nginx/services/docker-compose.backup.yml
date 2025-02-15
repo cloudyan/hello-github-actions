@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  mongo-backup:
+    image: mongo:4.4
+    container_name: mongodb-backup
+    volumes:
+      - mongo-backup:/data/backup
+    networks:
+      - database-network
+    command: |
+      /bin/sh -c '
+      while true; do
+        echo "[$(date)] Starting backup..."
+        mongodump --host mongo --out /data/backup/$(date +%Y%m%d_%H%M%S)
+        echo "[$(date)] Backup completed"
+        sleep 24h
+      done
+      '
+
+networks:
+  database-network:
+    external: true
+
+volumes:
+  mongo-backup:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ~/docker-apps/mongo-backup

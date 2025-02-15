@@ -1,13 +1,15 @@
 version: '3.8'
 
 # volumes:
-#   frontend-dist
-#   backend-dist
-#   mongo-data
-#   redis-data
-#   nginx-certs
-#   nginx-conf
-#   certbot-webroot
+# - docker-apps
+#   - frontend-dist
+#   - backend-dist
+#   - mongo-data
+#   - redis-data
+#   - nginx-certs 对应 nginx/certs
+#   - nginx-conf 对应 nginx/nginx.conf
+#   - certbot-webroot
+# - docker-backups
 
 services:
   web:

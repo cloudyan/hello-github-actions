@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:4.4
+    container_name: mongodb
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - database-network
+
+  redis:
+    image: redis:alpine
+    container_name: redis-cache
+    volumes:
+      - redis-data:/data
+    networks:
+      - database-network
+
+networks:
+  database-network:
+    external: true
+
+volumes:
+  mongo-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ~/docker-apps/mongo-data
+  redis-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ~/docker-apps/redis-data
