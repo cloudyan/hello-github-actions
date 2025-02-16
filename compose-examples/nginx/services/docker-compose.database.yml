@@ -1,33 +1,36 @@
 version: '3.8'
 
-# mongodb://admin:passward@localhost:27017/blog
+# mongodb://admin:admin123@localhost:27017/blog
 services:
   mongo:
     image: mongo:4.4
     container_name: mongodb
     environment:
-      # 数据库管理员用户名
-      MONGO_INITDB_ROOT_USERNAME: xiaohan
-      # 数据库管理员密码
-      MONGO_INITDB_ROOT_PASSWORD: xiaohan123
-      MONGO_INITDB_DATABASE: resume
+      # 数据库管理员账户配置
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: blog
     volumes:
-      - mongo-data:/data/db
-      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+      - mongodb-data:/data/db
+      # 一次性的初始化脚本
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     ports:
       - "27017:27017"
     command: --auth
     networks:
-      - database-network
+      database-network:
+        aliases:
+          - mongodb
 
 networks:
   database-network:
     external: true
 
 volumes:
-  mongo-data:
+  mongodb-data:
+    name: mongodb-data
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: ~/docker-apps/mongo-data
+      device: ~/docker-apps/mongodb/data
