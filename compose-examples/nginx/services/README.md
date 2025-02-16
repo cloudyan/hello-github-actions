@@ -16,7 +16,9 @@ user -> nginx (/) -> vue(dist)
 - 网关层：Nginx 作为统一入口，配置 SSL 证书自动续期
 - 前端服务层：Vue 静态资源部署
 - 后端服务层：NestJS API 服务
-- 数据服务层：MongoDB 数据库
+- 数据服务层：
+  - MongoDB 数据库：结构化数据存储
+  - MinIO 对象存储：文件存储服务
 - 辅助服务层：数据自动备份功能
 
 ### 2. 数据持久化
@@ -27,6 +29,10 @@ user -> nginx (/) -> vue(dist)
   - frontend-dist：前端构建产物
   - backend-dist：后端构建产物
   - mongo-data：MongoDB 数据存储
+  - minio/
+    - data：对象存储数据
+    - config：MinIO 配置
+    - certs：MinIO SSL 证书
   - nginx/
     - certs：SSL 证书
     - nginx.conf：Nginx 配置
@@ -53,9 +59,13 @@ user -> nginx (/) -> vue(dist)
   - 提供 API 服务
   - 通过 backend-network 与网关层和数据层通信
 
-- docker-compose.database.yml：数据服务层（MongoDB）
-  - 提供数据存储服务
-  - 通过 database-network 与后端服务层通信
+- docker-compose.database.yml：数据服务层
+  - MongoDB：提供结构化数据存储服务
+  - MongoDB 额外通过 database-network 与后端服务层通信
+
+- docker-compose.minio.yml：对象存储服务层
+  - MinIO：提供对象存储服务
+  - MinIO 额外通过 storage-network 提供存储服务
 
 - docker-compose.backup.yml：数据备份服务
   - 包含数据备份服务

@@ -28,4 +28,4 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: ~/docker-apps/mongo-backup
+      device: ~/docker-backups/mongo-backup

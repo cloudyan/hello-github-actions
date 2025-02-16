@@ -1,0 +1,60 @@
+version: '3.8'
+
+# mongodb://admin:passward@localhost:27017/blog
+services:
+  minio:
+    image: minio/minio:RELEASE.2021-06-17T00-10-46Z
+    container_name: my-minio
+    expose:
+      - "9000"
+    environment:
+      - MINIO_ACCESS_KEY=minio_user # minio登录用户名
+      - MINIO_SECRET_KEY=minio_password # minio登录密码
+      - MINIO_HTTPS_ENABLE=true
+      - MINIO_CERTS_CERTIFICATE=/certs/public.crt
+      - MINIO_CERTS_PRIVATE_KEY=/certs/private.key
+    volumes:
+      - minio-data:/data
+      - minio-config:/root/.minio
+      - ./certs:/certs:ro
+    command: server /data
+    networks:
+      - storage-network
+      - backend-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+
+networks:
+  storage-network:
+    name: storage-network
+    external: true
+  backend-network:
+    name: backend-network
+    external: true
+
+volumes:
+  minio-data:
+    name: minio-data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/docker-apps/minio/data
+  minio-config:
+    name: minio-config
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/docker-apps/minio/config
+
+# mkdir certs
+# openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+#   -keyout certs/private.key -out certs/public.crt \
+#   -subj "/C=US/ST=State/L=City/O=Organization/CN=smallpig.site"

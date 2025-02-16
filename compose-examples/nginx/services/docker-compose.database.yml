@@ -1,11 +1,22 @@
 version: '3.8'
 
+# mongodb://admin:passward@localhost:27017/blog
 services:
   mongo:
     image: mongo:4.4
     container_name: mongodb
+    environment:
+      # 数据库管理员用户名
+      MONGO_INITDB_ROOT_USERNAME: xiaohan
+      # 数据库管理员密码
+      MONGO_INITDB_ROOT_PASSWORD: xiaohan123
+      MONGO_INITDB_DATABASE: resume
     volumes:
       - mongo-data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+    ports:
+      - "27017:27017"
+    command: --auth
     networks:
       - database-network
 
