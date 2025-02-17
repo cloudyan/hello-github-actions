@@ -11,15 +11,21 @@ services:
     environment:
       - NODE_ENV=production
       - MONGODB_URI=mongodb://mongo:27017/app
-      - REDIS_URI=redis://redis:6379
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=admin
+      - MINIO_SECRET_KEY=admin123
+      - MINIO_USE_SSL=false
     networks:
       - backend-network
       - database-network
+      - storage-network
 
 networks:
   backend-network:
     external: true
   database-network:
+    external: true
+  storage-network:
     external: true
 
 volumes:

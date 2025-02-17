@@ -50,10 +50,13 @@ services:
     environment:
       - NODE_ENV=production
       - MONGODB_URI=mongodb://mongo:27017/app
-      - REDIS_URI=redis://redis:6379
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - MINIO_USE_SSL=false
     depends_on:
       - mongo
-      - redis
+      - minio
     networks:
       - backend
 
@@ -84,14 +87,6 @@ services:
         sleep 24h
       done
       '
-
-  redis:
-    image: redis:alpine
-    container_name: redis-cache
-    volumes:
-      - redis-data:/data
-    networks:
-      - backend
 
 networks:
   frontend:
@@ -128,12 +123,6 @@ volumes:
       type: none
       o: bind
       device: ~/docker-apps/mongo-data
-  redis-data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ~/docker-apps/redis-data
   certbot-webroot:
     driver: local
     driver_opts:
