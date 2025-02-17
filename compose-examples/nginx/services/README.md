@@ -1,4 +1,8 @@
-# 网关服务
+# 服务
+
+```bash
+docker-compose -f docker-compose.frontend.yml up -d
+```
 
 ## 服务链路
 
