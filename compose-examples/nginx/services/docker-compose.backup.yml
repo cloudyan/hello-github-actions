@@ -1,11 +1,12 @@
-version: '3.8'
+# version: '3.8'
 
+# docker compose -f ./docker-compose.backup.yml -p local-backup up -d
 services:
   mongo-backup:
     image: mongo:4.4
     container_name: mongodb-backup
     volumes:
-      - mongo-backup:/data/backup
+      - ${HOME}/docker-backups/mongo-backup:/data/backup
     networks:
       - database-network
     command: |
@@ -21,11 +22,3 @@ services:
 networks:
   database-network:
     external: true
-
-volumes:
-  mongo-backup:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ~/docker-backups/mongo-backup

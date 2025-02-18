@@ -1,5 +1,6 @@
-version: '3.8'
+# version: '3.8'
 
+# docker compose -f ./docker-compose.minio.yml -p local-minio up -d
 services:
   minio:
     image: minio/minio:RELEASE.2021-06-17T00-10-46Z
@@ -17,9 +18,9 @@ services:
       MINIO_CERTS_CERTIFICATE: /certs/public.crt
       MINIO_CERTS_PRIVATE_KEY: /certs/private.key
     volumes:
-      - minio-data:/data
-      - minio-config:/root/.minio
-      - minio-certs:/certs:ro
+      - ${HOME}/docker-apps/minio/data:/data
+      - ${HOME}/docker-apps/minio/config:/root/.minio
+      - ${HOME}/docker-apps/minio/certs:/certs:ro
     command: server /data
     networks:
       - storage-network
@@ -32,29 +33,6 @@ networks:
   backend-network:
     name: backend-network
     external: true
-
-volumes:
-  minio-data:
-    name: minio-data
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ~/docker-apps/minio/data
-  minio-config:
-    name: minio-config
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ~/docker-apps/minio/config
-  minio-certs:
-    name: minio-certs
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ~/docker-apps/minio/certs
 
 # mkdir certs
 # openssl req -x509 -nodes -days 365 -newkey rsa:2048 \

@@ -30,14 +30,19 @@ user -> nginx (/) -> vue(dist)
 持久化映射的数据目录结构：
 
 - docker-apps
-  - frontend-dist：前端构建产物
-  - backend-dist：后端构建产物
-  - mongo-data：MongoDB 数据存储
-  - minio/
+  - frontend
+    - dist：前端构建产物
+    - nginx.conf：前端服务 Nginx 配置
+  - backend
+    - dist：后端构建产物
+  - mongo
+    - data：MongoDB 数据存储
+    - config: MongoDB 配置
+  - minio
     - data：对象存储数据
     - config：MinIO 配置
     - certs：MinIO SSL 证书
-  - nginx/
+  - gateway
     - certs：SSL 证书
     - nginx.conf：Nginx 配置
   - certbot-webroot：SSL 证书自动续期

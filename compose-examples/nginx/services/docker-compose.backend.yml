@@ -1,13 +1,18 @@
-version: '3.8'
+# version: '3.8'
 
+# docker compose -f ./docker-compose.backend.yml -p local-backend up -d
 services:
-  api:
+  backend:
     image: node:20-alpine
     container_name: nestjs-api
     working_dir: /app
     volumes:
-      - backend-dist:/app
+      - ${HOME}/docker-apps/backend/dist:/app
     command: npm run start:prod
+    expose:
+      - "8001"
+    ports:
+      - "8001:8001" # 测试
     environment:
       - NODE_ENV=production
       - MONGODB_URI=mongodb://mongo:27017/app
@@ -27,11 +32,3 @@ networks:
     external: true
   storage-network:
     external: true
-
-volumes:
-  backend-dist:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ~/docker-apps/backend-dist

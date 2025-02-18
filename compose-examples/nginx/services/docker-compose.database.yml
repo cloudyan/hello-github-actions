@@ -1,5 +1,6 @@
-version: '3.8'
+# version: '3.8'
 
+# docker compose -f ./docker-compose.database.yml -p local-database up -d
 # mongodb://admin:admin123@localhost:27017/blog
 services:
   mongo:
@@ -11,9 +12,9 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: admin123
       MONGO_INITDB_DATABASE: blog
     volumes:
-      - mongodb-data:/data/db
+      - ${HOME}/docker-apps/mongodb/data:/data/db
       # 一次性的初始化脚本
-      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ${HOME}/docker-apps/mongodb/config/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     ports:
       - "27017:27017"
     command: --auth
@@ -25,12 +26,3 @@ services:
 networks:
   database-network:
     external: true
-
-volumes:
-  mongodb-data:
-    name: mongodb-data
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ~/docker-apps/mongodb/data
