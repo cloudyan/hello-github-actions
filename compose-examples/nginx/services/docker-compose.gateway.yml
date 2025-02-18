@@ -1,22 +1,26 @@
 # version: '3.8'
 
-# docker compose -f ./docker-compose.gateway.yml -p gateway up -d
+# docker compose -f ./docker-compose.gateway.yml -p local-gateway up -d
 # 检查
-# docker compose -f ./docker-compose.gateway.yml -p gateway ps
-# docker compose -f ./docker-compose.gateway.yml -p gateway logs nginx
+# docker compose -f ./docker-compose.gateway.yml -p local-gateway ps
+# docker compose -f ./docker-compose.gateway.yml -p local-gateway logs nginx
+# docker logs --tail 50 nginx-gateway
 # 重启服务
-# docker compose -f ./docker-compose.gateway.yml -p gateway restart nginx
+# docker compose -f ./docker-compose.gateway.yml -p local-gateway restart nginx
 services:
   nginx:
     image: nginx:stable
     container_name: nginx-gateway
     restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
+    # ports:
+    #   - "80:80"
+    #   - "443:443"
+    ports: # 开发环境测试验证
+      - "8000:80"
     volumes:
       # `:ro` 等同于`read_only: true`
-      - ${HOME}/docker-apps/gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ${HOME}/docker-apps/gateway/nginx.dev.conf:/etc/nginx/nginx.conf:ro # 开发环境测试验证
+      # - ${HOME}/docker-apps/gateway/nginx.prod.conf:/etc/nginx/nginx.conf:ro # 生产环境
       - ${HOME}/docker-apps/gateway/certs:/etc/nginx/ssl:ro
     networks:
       - frontend-network
