@@ -25,9 +25,12 @@ services:
     networks:
       - frontend-network
       - backend-network
+      - storage-network
 
 networks:
   frontend-network:
     external: true
   backend-network:
+    external: true
+  storage-network:
     external: true
