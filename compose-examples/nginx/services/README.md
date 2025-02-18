@@ -23,7 +23,9 @@ user -> nginx (/) -> vue(dist)
 - 数据服务层：
   - MongoDB 数据库：结构化数据存储
   - MinIO 对象存储：文件存储服务
-- 辅助服务层：数据自动备份功能
+- 辅助服务层：
+  - 数据自动备份功能
+  - SSL 证书自动续期
 
 ### 2. 数据持久化
 
@@ -35,9 +37,10 @@ user -> nginx (/) -> vue(dist)
     - nginx.conf：前端服务 Nginx 配置
   - backend
     - dist：后端构建产物
-  - mongo
+  - mongodb
     - data：MongoDB 数据存储
     - config: MongoDB 配置
+    - backups：MongoDB 数据备份
   - minio
     - data：对象存储数据
     - config：MinIO 配置
@@ -45,7 +48,9 @@ user -> nginx (/) -> vue(dist)
   - gateway
     - certs：SSL 证书
     - nginx.conf：Nginx 配置
-  - certbot-webroot：SSL 证书自动续期
+  - certbot
+    - certs：SSL 证书
+    - wwwroot：SSL 证书存储目录
 - docker-backups
   - mongo-backup：MongoDB 数据备份
 
@@ -57,12 +62,12 @@ user -> nginx (/) -> vue(dist)
   - 提供统一的访问入口
   - 管理 SSL 证书的自动续期
   - 处理请求路由和负载均衡
-  - 对应 gateway.nginx.conf 配置文件
+  - 对应 gateway/nginx.conf 配置文件
 
 - docker-compose.frontend.yml：前端服务层（Vue）
   - 部署静态资源
   - 通过 frontend-network 与网关层通信
-  - 对应 frontend.nginx.conf 配置文件
+  - 对应 frontend/nginx.conf 配置文件
 
 - docker-compose.backend.yml：后端服务层（NestJS）
   - 提供 API 服务
@@ -80,6 +85,10 @@ user -> nginx (/) -> vue(dist)
   - 包含数据备份服务
   - 通过 database-network 与数据服务层通信
   - 备份文件存储到 docker-backups 中
+
+- docker-compose.certbot.yml
+  - 使用 Certbot 自动生成和管理 SSL 证书
+  - 管理 SSL 证书的自动续期
 
 服务间通过 Docker 网络实现通信：
 

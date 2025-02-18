@@ -1,0 +1,15 @@
+# version: '3.8'
+
+# docker compose -f ./docker-compose.certbot.yml -p local-certbot up -d
+# 重启服务
+# docker compose -f ./docker-compose.certbot.yml -p local-certbot restart certbot
+services:
+  certbot:
+    image: certbot/certbot
+    container_name: gateway-certbot
+    restart: unless-stopped
+    volumes:
+      - ${HOME}/docker-apps/certbot/certs:/etc/letsencrypt
+      - ${HOME}/docker-apps/certbot/webroot:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
