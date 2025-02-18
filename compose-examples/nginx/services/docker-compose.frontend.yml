@@ -1,6 +1,8 @@
 # version: '3.8'
 
 # docker compose -f ./docker-compose.frontend.yml -p local-frontend up -d
+# 重启服务
+# docker compose -f ./docker-compose.frontend.yml -p local-frontend restart frontend
 services:
   frontend:
     container_name: nginx-frontend

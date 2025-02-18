@@ -1,6 +1,8 @@
 # version: '3.8'
 
 # docker compose -f ./docker-compose.backup.yml -p local-backup up -d
+# 重启服务
+# docker compose -f ./docker-compose.backup.yml -p local-backup restart mongo-backup
 services:
   mongo-backup:
     image: mongo:4.4

@@ -1,6 +1,8 @@
 # version: '3.8'
 
 # docker compose -f ./docker-compose.backend.yml -p local-backend up -d
+# 重启服务，必须使用此方式，使用完整的配置文件路径
+# docker compose -f ./docker-compose.backend.yml -p local-backend restart backend
 services:
   backend:
     image: node:20-alpine

@@ -1,6 +1,8 @@
 # version: '3.8'
 
 # docker compose -f ./docker-compose.gateway.yml -p gateway up -d
+# 重启服务
+# docker compose -f ./docker-compose.gateway.yml -p gateway restart nginx
 services:
   nginx:
     image: nginx:stable

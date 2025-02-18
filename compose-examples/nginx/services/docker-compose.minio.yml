@@ -1,6 +1,8 @@
 # version: '3.8'
 
 # docker compose -f ./docker-compose.minio.yml -p local-minio up -d
+# 重启服务
+# docker compose -f ./docker-compose.minio.yml -p local-minio restart minio
 services:
   minio:
     image: minio/minio:RELEASE.2021-06-17T00-10-46Z
