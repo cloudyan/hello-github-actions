@@ -5,11 +5,23 @@
 # docker compose -f ./docker-compose.certbot.yml -p local-certbot restart certbot
 services:
   certbot:
-    image: certbot/certbot
-    container_name: gateway-certbot
+    image: certbot/certbot:latest
+    container_name: certbot
     restart: unless-stopped
     volumes:
       - ${HOME}/docker-apps/certbot/certs:/etc/letsencrypt
       - ${HOME}/docker-apps/certbot/webroot:/var/www/certbot
+      - ${HOME}/docker-apps/certbot/scripts:/scripts
+    environment:
+      # 生产环境域名列表
+      - DOMAINS_PROD=mbjianli.com,www.mbjianli.com
+      # 开发环境域名列表
+      - DOMAINS_DEV=dev.mbjianli.com
+      # 证书管理员邮箱
+      - EMAIL=mbjianli@163.com
+      # 证书存储路径
+      - CERT_PATH=/etc/letsencrypt/live
+      # 证书更新检查间隔
+      - RENEW_INTERVAL=12h
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
