@@ -1,0 +1,186 @@
+/**
+ * 业务封装
+ * 响应拦截器不要返回改为返 api 数据，要依然返回 AxiosResponse 对象
+ */
+
+import type { AxiosRequestConfig } from 'axios';
+import axios from 'axios';
+// import Taro from '@tarojs/taro';
+// import axiosRetry from 'axios-retry'
+// import jsonpAdapter from 'axios-jsonp'
+
+interface ApiResponse<T = any> {
+  data: T;
+  code: number;
+  message: string;
+  error: boolean;
+}
+
+interface Config extends AxiosRequestConfig {
+  ignoreErrHandle?: boolean;
+}
+
+const conf: {
+  apiBaseUrl: string;
+  apiPrefix?: string;
+  authCodes: number[];
+} = {
+  apiBaseUrl: '',
+  authCodes: [100401],
+};
+
+// axios.defaults.adapter = createTaroAdapter(Taro.request)
+
+// 你的配置
+const instance = axios.create({
+  baseURL: conf.apiBaseUrl,
+});
+
+// 设置token
+// instance.defaults.headers.common['Authorization'] = 'myToken';
+
+// 安装 retry 插件
+// 当请求失败后，自动重新请求，只有3次失败后才真正失败
+// axiosRetry(instance, { retries: 3 })
+
+// 本地调试 H5
+if (process.env.NODE_ENV === 'development') {
+  instance.interceptors.request.use((config) => {
+    if (!/^https?/.test(config.url || '')) {
+      config.url = [conf.apiPrefix || '', config.url].join('');
+    }
+    return config;
+  });
+}
+
+// 拦截器返回数据是 ❌ 用法，使用后，导致后续很难再扩展（使用其他拦截器, 适配器等）
+// client.interceptors.response.use(response => {
+//   return response.data
+// })
+
+// 推荐使用函数代替拦截器 ✅
+export async function request(config: Config = {}): Promise<ApiResponse> {
+  // 你的业务逻辑封装，我们处理如下
+  // return instance.request(config)
+  //   .then((res) => formatResolveData(res))
+  //   .catch((err) => formatRejectData(err))
+
+  const formatResponse: ApiResponse = {
+    data: {},
+    code: -1, // 表示没有解析到code
+    message: '',
+    error: true,
+  };
+
+  // 业务逻辑封装 兼容各种api返回  返回统一格式
+  await instance
+    .request(config)
+    // .then(res: axiosResponse => res)
+    .catch((err) => err)
+    .then((res) => {
+      // 请求成功 读取的 res 本质为 res
+      // 请求失败 读取的 res?.response，对应为 res
+      console.log('request:');
+      if (res?.isAxiosError) {
+        res = res?.response || {}
+
+      }
+      const { data, status, statusText } = res;
+      formatResponse.data = data || {};
+      formatResponse.code = data?.code || status || -1;
+
+      // 网络层 出问题
+      if (res?.isAxiosError) {
+        formatResponse.message = data?.message || '网络异常，请稍后重试';
+        formatResponse.error = true;
+      } else {
+        // 网络层没问题 看看业务层 判断api是否有问题
+        formatResponse.message = data?.message || '';
+        formatResponse.error = Boolean(data?.code);
+      }
+      return res;
+    })
+    .catch((err) => {
+      formatResponse.message = '数据解析异常，请稍后重试';
+      console.error('Parse Api Response Error:', err);
+      return err;
+    });
+
+  // 触发登录
+  if (conf.authCodes.includes(formatResponse.code)) {
+    // goLogin();
+    return formatResponse;
+  }
+
+  // api 错误提示
+  // if (formatResponse.error && !config.ignoreErrHandle) {
+  //   if (Number(formatResponse.data?.errorLevel) === 1) {
+  //     // 触发全局modal显示
+  //     Taro.eventCenter.trigger(Taro.Current?.page?.route, {
+  //       msg: formatResponse.message,
+  //     });
+  //   } else {
+  //     formatResponse?.message &&
+  //       Taro.showToast({
+  //         title: formatResponse.message,
+  //         icon: 'none',
+  //         mask: true,
+  //       });
+  //   }
+  // }
+
+  return formatResponse;
+}
+
+// export function jsonp(url: string, config?: AxiosRequestConfig) {
+//   return request(url, { ...config, adapter: jsonpAdapter })
+// }
+
+// 使用 CancelToken
+const CancelToken = axios.CancelToken;
+export function withCancelToken<T>(fetcher: (data: T, config: Config) => Promise<ApiResponse>) {
+  let abort: ((message?: string) => void) | null = null;
+
+  function send(data: T, config?: Config) {
+    cancel(); // 主动取消
+
+    const cancelToken = new CancelToken((cancel) => (abort = cancel));
+    return fetcher(data, { ...config, cancelToken });
+  }
+
+  function cancel(message = 'abort') {
+    if (abort) {
+      abort(message);
+      abort = null;
+    }
+  }
+
+  return [send, cancel] as const;
+}
+
+// 使用 AbortController 控制
+export function withAbortController<T>(fetcher: (data: T, config: Config) => Promise<ApiResponse>) {
+  // 共用，使用该方式控制的流程，自动取消之前的重复请求
+  const controller = new AbortController();
+
+  function send(data: T, config?: Config) {
+    controller.abort(); // 自动取消
+
+    return fetcher(data, {
+      ...config,
+      signal: controller.signal,
+    });
+  }
+
+  return [send, controller.abort] as const;
+}
+
+export default instance;
+
+// 实现版本控制
+// instance.interceptors.request.use(config => {
+//   config.url = config.url.replace('{version}', 'v1')
+//   return config
+// })
+// GET /api/v1/users
+// request('/api/{version}/users')

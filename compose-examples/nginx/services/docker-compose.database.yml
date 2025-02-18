@@ -15,8 +15,10 @@ services:
       - ${HOME}/docker-apps/mongodb/data:/data/db
       # 一次性的初始化脚本
       - ${HOME}/docker-apps/mongodb/config/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-    ports:
-      - "27017:27017"
+    expose:
+      - "27017"
+    # ports:
+    #   - "27017:27017"
     command: --auth
     networks:
       database-network:
