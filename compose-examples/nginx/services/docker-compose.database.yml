@@ -19,8 +19,8 @@ services:
       - ${HOME}/docker-apps/mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     expose:
       - "27017"
-    ports:
-      - "27017:27017"
+    # ports:
+    #   - "27017:27017"
     command: --auth
     networks:
       database-network:
