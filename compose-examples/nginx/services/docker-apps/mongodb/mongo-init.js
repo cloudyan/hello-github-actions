@@ -8,8 +8,9 @@ db = db.getSiblingDB('admin');
 //   roles: [ { role: "root", db: "admin" } ]
 // });
 
+// 在 MongoDB 容器首次启动时自动执行的脚本
 // 获取环境变量中的数据库名称，如果未设置则使用默认值'blog'
-const dbName = process.env.MONGO_DB_NAME || 'blog';
+const dbName = process.env.MONGO_INITDB_DATABASE || 'blog';
 console.log('创建数据库: ', dbName);
 
 // 切换到业务数据库
