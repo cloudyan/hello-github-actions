@@ -8,16 +8,20 @@ db = db.getSiblingDB('admin');
 //   roles: [ { role: "root", db: "admin" } ]
 // });
 
+// 获取环境变量中的数据库名称，如果未设置则使用默认值'blog'
+const dbName = process.env.MONGO_DB_NAME || 'blog';
+console.log('创建数据库: ', dbName);
+
 // 切换到业务数据库
-db = db.getSiblingDB('blog');
+db = db.getSiblingDB(dbName);
 
 // 创建具体业务数据库的用户
 db.createUser({
-  user: 'blog_admin',
-  pwd: 'blog_admin123',
+  user: 'xiaohan',
+  pwd: 'xiaohan123',
   roles: [
-    { role: 'readWrite', db: 'blog' },
-    { role: 'dbAdmin', db: 'blog' }
+    { role: 'readWrite', db: dbName },
+    { role: 'dbAdmin', db: dbName }
   ]
 });
 

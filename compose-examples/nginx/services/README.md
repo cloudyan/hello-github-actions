@@ -1,7 +1,7 @@
 # 服务
 
 ```bash
-
+ln -s /xxx/xx/docker-apps ~/docker-apps
 ```
 
 ## 服务链路
@@ -88,6 +88,7 @@ user -> nginx (/) -> vue(dist)
 docker network create frontend-network  # 前端与网关层通信
 docker network create backend-network   # 后端与网关层通信
 docker network create database-network  # 后端与数据层通信
+docker network create storage-network  # 后端与存储通信
 ```
 
 ### 4. 路由规则

@@ -4,7 +4,7 @@
 services:
   backend:
     image: node:20-alpine
-    container_name: nestjs-api
+    container_name: backend
     working_dir: /app
     volumes:
       - ${HOME}/docker-apps/backend/dist:/app
