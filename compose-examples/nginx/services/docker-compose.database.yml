@@ -4,9 +4,9 @@
 # MONGO_DB_NAME=mydb docker compose -f ./docker-compose.database.yml -p local-database up -d
 # mongodb://admin:admin123@localhost:27017/blog
 services:
-  mongo:
+  mongo: # 服务名称
     image: mongo:4.4
-    container_name: mongodb
+    container_name: my-mongodb
     environment:
       # 数据库管理员账户配置
       MONGO_INITDB_ROOT_USERNAME: admin
@@ -24,8 +24,9 @@ services:
     command: --auth
     networks:
       database-network:
-        aliases:
-          - mongodb
+        # 将'mongodb'改为'mongo'。这样可以直接使用服务名作为网络DNS名称，简化配置。
+        # aliases:
+        #   - mongodb
 
 networks:
   database-network:

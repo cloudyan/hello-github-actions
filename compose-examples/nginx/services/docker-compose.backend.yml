@@ -4,7 +4,8 @@
 services:
   backend:
     image: node:20-alpine
-    container_name: backend
+    container_name: nodejs-backend
+    restart: always
     working_dir: /app
     volumes:
       - ${HOME}/docker-apps/backend/dist:/app
@@ -15,7 +16,13 @@ services:
       - "8001:8001" # 测试
     environment:
       - NODE_ENV=production
-      - MONGODB_URI=mongodb://mongo:27017/app
+      # `mongodb://mongo:27017/app` 中的`mongo` 是MongoDB容器的服务名称
+      # 也可以用database-network网络中的别名（在docker-compose.database.yml中通过aliases定义）。
+      # 27017是MongoDB的默认端口，
+      # mydb是数据库名。
+      - MONGODB_URI=mongodb://mongo:27017/mydb
+      # `minio` 是MinIO容器的服务名，它在storage-network网络中自动成为DNS名称。
+      # 9000是MinIO的API端口。
       - MINIO_ENDPOINT=minio:9000
       - MINIO_ACCESS_KEY=admin
       - MINIO_SECRET_KEY=admin123

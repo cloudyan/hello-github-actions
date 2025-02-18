@@ -4,9 +4,9 @@
 services:
   mongo-backup:
     image: mongo:4.4
-    container_name: mongodb-backup
+    container_name: my-mongo-backup
     volumes:
-      - ${HOME}/docker-backups/mongo-backup:/data/backup
+      - ${HOME}/docker-apps/mongodb/backup:/data/backup
     networks:
       - database-network
     command: |
