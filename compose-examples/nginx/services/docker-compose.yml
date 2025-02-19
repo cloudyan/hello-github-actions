@@ -101,34 +101,36 @@ services:
     #   - "443:443"
     ports: # 开发环境测试验证
       - "8081:80"
+      - "8082:443"
     volumes:
       # `:ro` 等同于`read_only: true`
       - ${HOME}/docker-apps/gateway/nginx.dev.conf:/etc/nginx/nginx.conf:ro # 开发环境测试验证
       # - ${HOME}/docker-apps/gateway/nginx.prod.conf:/etc/nginx/nginx.conf:ro # 生产环境
-      - ${HOME}/docker-apps/gateway/certs:/etc/nginx/ssl:ro
+      # - ${HOME}/docker-apps/gateway/certs:/etc/nginx/ssl:ro
+      - ${HOME}/docker-apps/gateway/ssl:/etc/nginx/ssl:ro
     networks:
       - frontend-network
       - backend-network
       - storage-network
 
-  gateway-prod:
-    image: nginx:stable
-    container_name: nginx-gateway-prod
-    restart: unless-stopped
-    # ports:
-    #   - "80:80"
-    #   - "443:443"
-    ports: # 开发环境测试验证
-      - "8090:80"
-    volumes:
-      # `:ro` 等同于`read_only: true`
-      - ${HOME}/docker-apps/gateway/nginx.prod.conf:/etc/nginx/nginx.conf:ro # 开发环境测试验证
-      # - ${HOME}/docker-apps/gateway/nginx.prod.conf:/etc/nginx/nginx.conf:ro # 生产环境
-      - ${HOME}/docker-apps/gateway/certs:/etc/nginx/ssl:ro
-    networks:
-      - frontend-network
-      - backend-network
-      - storage-network
+  # gateway-prod:
+  #   image: nginx:stable
+  #   container_name: nginx-gateway-prod
+  #   restart: unless-stopped
+  #   # ports:
+  #   #   - "80:80"
+  #   #   - "443:443"
+  #   ports: # 开发环境测试验证
+  #     - "8090:80"
+  #   volumes:
+  #     # `:ro` 等同于`read_only: true`
+  #     - ${HOME}/docker-apps/gateway/nginx.prod.conf:/etc/nginx/nginx.conf:ro # 开发环境测试验证
+  #     # - ${HOME}/docker-apps/gateway/nginx.prod.conf:/etc/nginx/nginx.conf:ro # 生产环境
+  #     - ${HOME}/docker-apps/gateway/certs:/etc/nginx/ssl:ro
+  #   networks:
+  #     - frontend-network
+  #     - backend-network
+  #     - storage-network
 
   mongo: # 服务名称
     image: mongo:4.4

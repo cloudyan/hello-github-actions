@@ -95,6 +95,16 @@ user -> nginx (/) -> vue(dist)
   - 使用 Certbot 自动生成和管理 SSL 证书
   - 管理 SSL 证书的自动续期
 
+## ssl
+
+```bash
+mkdir certs
+# 生成自签名证书（浏览器不信任自签名证书的）
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout ./gateway/ssl/localhost.key -out ./gateway/ssl/localhost.crt \
+  -subj /CN=localhost
+```
+
 服务间通过 Docker 网络实现通信：
 
 ```bash
