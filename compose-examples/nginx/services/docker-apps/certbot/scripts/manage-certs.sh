@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # 证书管理脚本
 
@@ -15,39 +15,56 @@ mkdir -p "$CERT_PATH/dev"
 # 申请生产环境证书
 apply_prod_certs() {
     echo "开始申请生产环境证书..."
-    IFS=',' read -ra DOMAINS <<< "$DOMAINS_PROD"
-    for domain in "${DOMAINS[@]}"; do
+    old_IFS=$IFS
+    IFS=','
+    for domain in $DOMAINS_PROD; do
         echo "为域名 $domain 申请证书"
-        certbot certonly --webroot \
+        if ! certbot certonly --webroot \
             --webroot-path=/var/www/certbot \
             --email "$EMAIL" \
             --agree-tos \
             --no-eff-email \
             -d "$domain" \
-            --cert-name "prod-$domain"
+            --cert-name "prod-$domain" \
+            --keep-until-expiring \
+            --non-interactive; then
+            echo "警告: 生产环境证书申请失败: $domain"
+        fi
     done
+    IFS=$old_IFS
 }
 
 # 申请开发环境证书
 apply_dev_certs() {
     echo "开始申请开发环境证书..."
-    IFS=',' read -ra DOMAINS <<< "$DOMAINS_DEV"
-    for domain in "${DOMAINS[@]}"; do
+    old_IFS=$IFS
+    IFS=','
+    for domain in $DOMAINS_DEV; do
         echo "为域名 $domain 申请证书"
-        certbot certonly --webroot \
+        if ! certbot certonly --webroot \
             --webroot-path=/var/www/certbot \
             --email "$EMAIL" \
             --agree-tos \
             --no-eff-email \
             -d "$domain" \
-            --cert-name "dev-$domain"
+            --cert-name "dev-$domain" \
+            --staging \
+            --keep-until-expiring \
+            --non-interactive; then
+            echo "警告: 开发环境证书申请失败: $domain"
+        fi
     done
+    IFS=$old_IFS
 }
 
 # 续期所有证书
 renew_certs() {
     echo "检查并续期证书..."
-    certbot renew --quiet
+    if ! certbot renew --quiet --non-interactive; then
+        echo "警告: 证书续期失败"
+        return 1
+    fi
+    return 0
 }
 
 # 主函数

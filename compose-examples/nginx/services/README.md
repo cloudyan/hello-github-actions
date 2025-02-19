@@ -103,6 +103,17 @@ mkdir certs
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
   -keyout ./gateway/ssl/localhost.key -out ./gateway/ssl/localhost.crt \
   -subj /CN=localhost
+
+# PROD
+# certbot
+    command: certonly --webroot --webroot-path=/var/www/certbot --email ${EMAIL:-admin@example.com} --agree-tos --no-eff-email -d ${DOMAINS_PROD} --staging
+    entrypoint: "/bin/sh -c '
+      trap exit TERM;
+      while :; do
+        certbot renew --webroot --webroot-path=/var/www/certbot;
+        sleep ${RENEW_INTERVAL:-12h} & wait $${!};
+      done;
+    '"
 ```
 
 服务间通过 Docker 网络实现通信：
@@ -143,3 +154,18 @@ docker network create storage-network  # 后端与存储通信
 - 错误页面处理
 - 服务健康检查
 - 容器自动重启策略
+
+## 错误排查
+
+```bash
+docker ps -a
+docker logs nginx-gateway-dev
+docker exec nginx-gateway-dev ls -l /etc/nginx/ssl
+docker restart nginx-gateway-dev
+
+cat ${HOME}/docker-apps/gateway/nginx.dev.conf
+
+docker ps -a --filter name=certbot
+docker logs certbot
+ls -l ${HOME}/docker-apps/certbot/scripts
+```

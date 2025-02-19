@@ -16,6 +16,7 @@
 
 # docker compose -f ./docker-compose.yml -p local up -d
 # docker compose -f ./docker-compose.yml -p local up -d gateway-dev
+# docker compose -f ./docker-compose.yml -p local up -d certbot
 # docker compose -f ./docker-compose.backend.yml -p local restart backend
 services:
   frontend:
@@ -192,6 +193,10 @@ services:
       - CERT_PATH=/etc/letsencrypt/live
       # 证书更新检查间隔
       - RENEW_INTERVAL=12h
+    command: |
+      /bin/sh -c '
+        chmod +x /scripts/manage-certs.sh && /scripts/manage-certs.sh
+      '
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
 
