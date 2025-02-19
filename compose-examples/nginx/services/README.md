@@ -2,6 +2,11 @@
 
 ```bash
 ln -s /xxx/xx/docker-apps ~/docker-apps
+
+# 在一个配置文件内维护，但可以单个服务来启动以及重启 相互独立，互不影响，分层架构，独立部署维护
+docker compose -f ./docker-compose.yml -p local up -d
+docker compose -f ./docker-compose.yml -p local up -d frontend backend minio gateway certbot mongo mongo-backup
+docker compose -f ./docker-compose.backend.yml -p local restart backend
 ```
 
 ## 服务链路

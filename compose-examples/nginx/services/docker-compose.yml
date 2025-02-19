@@ -1,0 +1,185 @@
+# version: '3.8'
+
+# volumes:
+# - docker-apps
+#   - frontend
+#     - dist
+#     - nginx.conf
+#   - backend
+#     - dist
+#   - mongo-data
+#   - redis-data
+#   - nginx-certs 对应 nginx/certs
+#   - nginx-conf 对应 nginx/nginx.conf
+#   - certbot-webroot
+# - docker-backups
+
+# docker compose -f ./docker-compose.yml -p local up -d
+# docker compose -f ./docker-compose.yml -p local up -d frontend backend minio gateway certbot mongo mongo-backup
+# docker compose -f ./docker-compose.backend.yml -p local restart backend
+services:
+  frontend:
+    container_name: nginx-frontend
+    image: nginx:stable
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    restart: always
+    expose:
+      - "80"
+    # ports:
+    #   - "8002:80" # 测试
+    volumes:
+      - ${HOME}/docker-apps/frontend/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ${HOME}/docker-apps/frontend/dist:/usr/share/nginx/html
+    networks:
+      - frontend-network
+
+  backend:
+    image: node:20-alpine
+    container_name: nodejs-backend
+    restart: always
+    working_dir: /app
+    volumes:
+      - ${HOME}/docker-apps/backend/dist:/app
+    command: npm run start:prod
+    expose:
+      - "8001"
+    # ports:
+    #   - "8001:8001" # 测试
+    environment:
+      - NODE_ENV=production
+      # `mongodb://mongo:27017/app` 中的`mongo` 是MongoDB容器的服务名称
+      # 也可以用database-network网络中的别名（在docker-compose.database.yml中通过aliases定义）。
+      # 27017是MongoDB的默认端口，
+      # mydb是数据库名。
+      - MONGODB_URI=mongodb://mongo:27017/mydb
+      # `minio` 是MinIO容器的服务名，它在storage-network网络中自动成为DNS名称。
+      # 9000是MinIO的API端口。
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=admin
+      - MINIO_SECRET_KEY=admin123
+      - MINIO_USE_SSL=false
+    networks:
+      - backend-network
+      - database-network
+      - storage-network
+
+  minio:
+    image: minio/minio:RELEASE.2021-06-17T00-10-46Z
+    # image: minio/minio:RELEASE.2023-12-23T07-19-11Z
+    container_name: minio
+    expose:
+      - "9000"
+      - "9001"
+    # ports: # 测试端口
+    #   - "9000:9000"
+    #   - "9001:9001"
+    environment:
+      # minio登录用户名
+      MINIO_ACCESS_KEY: admin
+      # minio登录密码
+      MINIO_SECRET_KEY: admin123
+      MINIO_HTTPS_ENABLE: 'true'
+      MINIO_CERTS_CERTIFICATE: /certs/public.crt
+      MINIO_CERTS_PRIVATE_KEY: /certs/private.key
+    volumes:
+      - ${HOME}/docker-apps/minio/data:/data
+      - ${HOME}/docker-apps/minio/config:/root/.minio
+      - ${HOME}/docker-apps/minio/certs:/certs:ro
+    command: server /data
+    networks:
+      - storage-network
+      - backend-network
+
+  gateway:
+    image: nginx:stable
+    container_name: nginx-gateway
+    restart: unless-stopped
+    # ports:
+    #   - "80:80"
+    #   - "443:443"
+    ports: # 开发环境测试验证
+      - "8081:80"
+    volumes:
+      # `:ro` 等同于`read_only: true`
+      - ${HOME}/docker-apps/gateway/nginx.dev.conf:/etc/nginx/nginx.conf:ro # 开发环境测试验证
+      # - ${HOME}/docker-apps/gateway/nginx.prod.conf:/etc/nginx/nginx.conf:ro # 生产环境
+      - ${HOME}/docker-apps/gateway/certs:/etc/nginx/ssl:ro
+    networks:
+      - frontend-network
+      - backend-network
+      - storage-network
+
+  mongo: # 服务名称
+    image: mongo:4.4
+    container_name: mongodb
+    environment:
+      # 数据库管理员账户配置
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: ${MONGO_DB_NAME:-mydb} # 默认使用 'mydb'
+    volumes:
+      - ${HOME}/docker-apps/mongodb/data:/data/db
+      # - ${HOME}/docker-apps/mongodb/backup:/data/backup
+      # 一次性的初始化脚本
+      - ${HOME}/docker-apps/mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    expose:
+      - "27017"
+    # ports:
+    #   - "27017:27017"
+    command: --auth
+    networks:
+      database-network:
+        # 将'mongodb'改为'mongo'。这样可以直接使用服务名作为网络DNS名称，简化配置。
+        # aliases:
+        #   - mongodb
+
+  mongo-backup:
+    image: mongo:4.4
+    container_name: my-mongo-backup
+    volumes:
+      - ${HOME}/docker-apps/mongodb/backup:/data/backup
+    networks:
+      - database-network
+    command: |
+      /bin/sh -c '
+      while true; do
+        echo "[$(date)] Starting backup..."
+        mongodump --host mongo --out /data/backup/$(date +%Y%m%d_%H%M%S)
+        echo "[$(date)] Backup completed"
+        sleep 24h
+      done
+      '
+
+  certbot:
+    image: certbot/certbot:latest
+    container_name: certbot
+    restart: unless-stopped
+    volumes:
+      - ${HOME}/docker-apps/certbot/certs:/etc/letsencrypt
+      - ${HOME}/docker-apps/certbot/webroot:/var/www/certbot
+      - ${HOME}/docker-apps/certbot/scripts:/scripts
+    environment:
+      # 生产环境域名列表
+      - DOMAINS_PROD=mbjianli.com,www.mbjianli.com
+      # 开发环境域名列表
+      - DOMAINS_DEV=dev.mbjianli.com
+      # 证书管理员邮箱
+      - EMAIL=mbjianli@163.com
+      # 证书存储路径
+      - CERT_PATH=/etc/letsencrypt/live
+      # 证书更新检查间隔
+      - RENEW_INTERVAL=12h
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+
+networks:
+  frontend-network:
+    external: true
+  backend-network:
+    external: true
+  database-network:
+    external: true
+  storage-network:
+    external: true
