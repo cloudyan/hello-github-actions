@@ -15,7 +15,7 @@
 # - docker-backups
 
 # docker compose -f ./docker-compose.yml -p local up -d
-# docker compose -f ./docker-compose.yml -p local up -d frontend backend minio gateway certbot mongo mongo-backup
+# docker compose -f ./docker-compose.yml -p local up -d gateway-dev
 # docker compose -f ./docker-compose.backend.yml -p local restart backend
 services:
   frontend:
@@ -92,9 +92,9 @@ services:
       - storage-network
       - backend-network
 
-  gateway:
+  gateway-dev:
     image: nginx:stable
-    container_name: nginx-gateway
+    container_name: nginx-gateway-dev
     restart: unless-stopped
     # ports:
     #   - "80:80"
@@ -104,6 +104,25 @@ services:
     volumes:
       # `:ro` 等同于`read_only: true`
       - ${HOME}/docker-apps/gateway/nginx.dev.conf:/etc/nginx/nginx.conf:ro # 开发环境测试验证
+      # - ${HOME}/docker-apps/gateway/nginx.prod.conf:/etc/nginx/nginx.conf:ro # 生产环境
+      - ${HOME}/docker-apps/gateway/certs:/etc/nginx/ssl:ro
+    networks:
+      - frontend-network
+      - backend-network
+      - storage-network
+
+  gateway-prod:
+    image: nginx:stable
+    container_name: nginx-gateway-prod
+    restart: unless-stopped
+    # ports:
+    #   - "80:80"
+    #   - "443:443"
+    ports: # 开发环境测试验证
+      - "8090:80"
+    volumes:
+      # `:ro` 等同于`read_only: true`
+      - ${HOME}/docker-apps/gateway/nginx.prod.conf:/etc/nginx/nginx.conf:ro # 开发环境测试验证
       # - ${HOME}/docker-apps/gateway/nginx.prod.conf:/etc/nginx/nginx.conf:ro # 生产环境
       - ${HOME}/docker-apps/gateway/certs:/etc/nginx/ssl:ro
     networks:
