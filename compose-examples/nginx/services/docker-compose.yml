@@ -31,8 +31,8 @@ services:
     # ports:
     #   - "8002:80" # 测试
     volumes:
-      - ${HOME}/docker-apps/frontend/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ${HOME}/docker-apps/frontend/dist:/usr/share/nginx/html
+      - ~/docker-apps/frontend/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ~/docker-apps/frontend/dist:/usr/share/nginx/html
     networks:
       - frontend-network
 
@@ -42,7 +42,7 @@ services:
     restart: always
     working_dir: /app
     volumes:
-      - ${HOME}/docker-apps/backend/dist:/app
+      - ~/docker-apps/backend/dist:/app
     command: npm run start:prod
     expose:
       - "8001"
@@ -85,9 +85,9 @@ services:
       MINIO_CERTS_CERTIFICATE: /certs/public.crt
       MINIO_CERTS_PRIVATE_KEY: /certs/private.key
     volumes:
-      - ${HOME}/docker-apps/minio/data:/data
-      - ${HOME}/docker-apps/minio/config:/root/.minio
-      - ${HOME}/docker-apps/minio/certs:/certs:ro
+      - ~/docker-apps/minio/data:/data
+      - ~/docker-apps/minio/config:/root/.minio
+      - ~/docker-apps/minio/certs:/certs:ro
     command: server /data
     networks:
       - storage-network
@@ -105,10 +105,10 @@ services:
       - "8082:443"
     volumes:
       # `:ro` 等同于`read_only: true`
-      - ${HOME}/docker-apps/gateway/nginx.dev.conf:/etc/nginx/nginx.conf:ro # 开发环境测试验证
-      # - ${HOME}/docker-apps/gateway/nginx.prod.conf:/etc/nginx/nginx.conf:ro # 生产环境
-      # - ${HOME}/docker-apps/gateway/certs:/etc/nginx/ssl:ro
-      - ${HOME}/docker-apps/gateway/ssl:/etc/nginx/ssl:ro
+      - ~/docker-apps/gateway/nginx.dev.conf:/etc/nginx/nginx.conf:ro # 开发环境测试验证
+      # - ~/docker-apps/gateway/nginx.prod.conf:/etc/nginx/nginx.conf:ro # 生产环境
+      # - ~/docker-apps/gateway/certs:/etc/nginx/ssl:ro
+      - ~/docker-apps/gateway/ssl:/etc/nginx/ssl:ro
     networks:
       - frontend-network
       - backend-network
@@ -125,9 +125,9 @@ services:
   #     - "8090:80"
   #   volumes:
   #     # `:ro` 等同于`read_only: true`
-  #     - ${HOME}/docker-apps/gateway/nginx.prod.conf:/etc/nginx/nginx.conf:ro # 开发环境测试验证
-  #     # - ${HOME}/docker-apps/gateway/nginx.prod.conf:/etc/nginx/nginx.conf:ro # 生产环境
-  #     - ${HOME}/docker-apps/gateway/certs:/etc/nginx/ssl:ro
+  #     - ~/docker-apps/gateway/nginx.prod.conf:/etc/nginx/nginx.conf:ro # 开发环境测试验证
+  #     # - ~/docker-apps/gateway/nginx.prod.conf:/etc/nginx/nginx.conf:ro # 生产环境
+  #     - ~/docker-apps/gateway/certs:/etc/nginx/ssl:ro
   #   networks:
   #     - frontend-network
   #     - backend-network
@@ -142,10 +142,10 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: admin123
       MONGO_INITDB_DATABASE: ${MONGO_DB_NAME:-mydb} # 默认使用 'mydb'
     volumes:
-      - ${HOME}/docker-apps/mongodb/data:/data/db
-      # - ${HOME}/docker-apps/mongodb/backup:/data/backup
+      - ~/docker-apps/mongodb/data:/data/db
+      # - ~/docker-apps/mongodb/backup:/data/backup
       # 一次性的初始化脚本
-      - ${HOME}/docker-apps/mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ~/docker-apps/mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     expose:
       - "27017"
     # ports:
@@ -161,27 +161,21 @@ services:
     image: mongo:4.4
     container_name: my-mongo-backup
     volumes:
-      - ${HOME}/docker-apps/mongodb/backup:/data/backup
+      - ~/docker-apps/mongodb/backup:/data/backup
+      - ~/docker-apps/mongodb/backup.sh:/data/backup.sh
     networks:
       - database-network
     command: |
-      /bin/sh -c '
-      while true; do
-        echo "[$(date)] Starting backup..."
-        mongodump --host mongo --out /data/backup/$(date +%Y%m%d_%H%M%S)
-        echo "[$(date)] Backup completed"
-        sleep 24h
-      done
-      '
+      /bin/sh -c 'chmod +x /data/backup.sh && /data/backup.sh'
 
   certbot:
     image: certbot/certbot:latest
     container_name: certbot
     restart: unless-stopped
     volumes:
-      - ${HOME}/docker-apps/certbot/certs:/etc/letsencrypt
-      - ${HOME}/docker-apps/certbot/webroot:/var/www/certbot
-      - ${HOME}/docker-apps/certbot/scripts:/scripts
+      - ~/docker-apps/certbot/certs:/etc/letsencrypt
+      - ~/docker-apps/certbot/webroot:/var/www/certbot
+      - ~/docker-apps/certbot/scripts:/scripts
     environment:
       # 生产环境域名列表
       - DOMAINS_PROD=mbjianli.com,www.mbjianli.com
