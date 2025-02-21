@@ -3,8 +3,8 @@
 # 证书管理脚本
 
 # 检查必要的环境变量
-if [ -z "$DOMAINS_PROD" ] || [ -z "$DOMAINS_DEV" ] || [ -z "$EMAIL" ]; then
-    echo "错误: 缺少必要的环境变量 (DOMAINS_PROD, DOMAINS_DEV, EMAIL)"
+if [ -z "$DOMAINS_DEV" ] || [ -z "$EMAIL" ]; then
+    echo "错误: 缺少必要的环境变量 (DOMAINS_DEV, EMAIL)"
     exit 1
 fi
 
@@ -14,6 +14,11 @@ mkdir -p "$CERT_PATH/dev"
 
 # 申请生产环境证书
 apply_prod_certs() {
+    if [ -z "$DOMAINS_PROD" ]; then
+        echo "跳过生产环境证书申请: DOMAINS_PROD 未配置"
+        return 0
+    fi
+
     echo "开始申请生产环境证书..."
     old_IFS=$IFS
     IFS=','
@@ -36,6 +41,11 @@ apply_prod_certs() {
 
 # 申请开发环境证书
 apply_dev_certs() {
+    if [ -z "$DOMAINS_DEV" ]; then
+        echo "跳过生产环境证书申请: DOMAINS_DEV 未配置"
+        return 0
+    fi
+
     echo "开始申请开发环境证书..."
     old_IFS=$IFS
     IFS=','

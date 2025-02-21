@@ -169,6 +169,11 @@ cat ${HOME}/docker-apps/gateway/nginx.dev.conf
 docker ps -a --filter name=certbot
 docker logs certbot
 ls -l ${HOME}/docker-apps/certbot/scripts
+
+docker logs --tail 50 certbot
+
+# 手动强制执行
+docker exec certbot certbot renew --force-renewal
 ```
 
 ## docker 镜像加速
@@ -235,3 +240,13 @@ acme.sh --install-cert -d yourdomain.com \
   --fullchain-file /etc/nginx/ssl/fullchain.cer \
   --reloadcmd      "systemctl reload nginx"
 ```
+
+## certbot
+
+```
+sudo dnf install python3 augeas-libs
+sudo yum install python36 augeas-libs
+```
+
+# certbot
+127.0.0.1 local.mbjianli.com

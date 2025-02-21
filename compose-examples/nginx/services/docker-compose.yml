@@ -20,7 +20,7 @@
 # docker compose -f ./docker-compose.backend.yml -p local restart backend
 services:
   frontend:
-    container_name: nginx-frontend
+    container_name: frontend
     image: nginx:stable
     # build:
     #   context: .
@@ -38,7 +38,7 @@ services:
 
   backend:
     image: node:20-alpine
-    container_name: nodejs-backend
+    container_name: backend
     restart: always
     working_dir: /app
     volumes:
@@ -98,7 +98,7 @@ services:
 
   gateway:
     image: nginx:stable
-    container_name: nginx-gateway
+    container_name: gateway
     restart: unless-stopped
     ports:
       - "80:80"
@@ -109,11 +109,11 @@ services:
     volumes:
       # `:ro` 等同于`read_only: true`
       # 开发环境
-      - ~/docker-apps/gateway/nginx.dev.conf:/etc/nginx/nginx.conf:ro # 开发环境测试验证
-      - ~/docker-apps/gateway/ssl:/etc/nginx/ssl:ro
+      # - ~/docker-apps/gateway/nginx.dev.conf:/etc/nginx/nginx.conf:ro # 开发环境测试验证
+      # - ~/docker-apps/gateway/ssl:/etc/nginx/ssl:ro
       # 生产环境
-      # - ~/docker-apps/gateway/nginx.prod.conf:/etc/nginx/nginx.conf:ro # 生产环境
-      # - ~/docker-apps/gateway/certs:/etc/nginx/ssl:ro
+      - ~/docker-apps/gateway/nginx.prod.conf:/etc/nginx/nginx.conf:ro # 生产环境
+      - ~/docker-apps/gateway/certs:/etc/nginx/ssl:ro
     networks:
       - frontend-network
       - backend-network
@@ -145,7 +145,7 @@ services:
 
   mongo-backup:
     image: mongo:4.4
-    container_name: my-mongo-backup
+    container_name: mongo-backup
     volumes:
       - ~/docker-apps/mongodb/backup:/data/backup
       - ~/docker-apps/mongodb/backup.sh:/data/backup.sh
@@ -164,7 +164,7 @@ services:
       - ~/docker-apps/certbot/scripts:/scripts
     environment:
       # 生产环境域名列表
-      - DOMAINS_PROD=mbjianli.com,www.mbjianli.com
+      # - DOMAINS_PROD=mbjianli.com,www.mbjianli.com
       # 开发环境域名列表
       - DOMAINS_DEV=dev.mbjianli.com
       # 证书管理员邮箱
