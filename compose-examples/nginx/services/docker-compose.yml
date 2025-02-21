@@ -15,7 +15,7 @@
 # - docker-backups
 
 # docker compose -f ./docker-compose.yml -p local up -d
-# docker compose -f ./docker-compose.yml -p local up -d gateway-dev
+# docker compose -f ./docker-compose.yml -p local up -d gateway
 # docker compose -f ./docker-compose.yml -p local up -d certbot
 # docker compose -f ./docker-compose.backend.yml -p local restart backend
 services:
@@ -43,7 +43,10 @@ services:
     working_dir: /app
     volumes:
       - ~/docker-apps/backend/dist:/app
-    command: npm run start:prod
+    command: |
+      /bin/sh -c '
+        corepack enable && pnpm i && npm run start:prod
+      '
     expose:
       - "8001"
     # ports:
@@ -93,45 +96,28 @@ services:
       - storage-network
       - backend-network
 
-  gateway-dev:
+  gateway:
     image: nginx:stable
-    container_name: nginx-gateway-dev
+    container_name: nginx-gateway
     restart: unless-stopped
-    # ports:
-    #   - "80:80"
-    #   - "443:443"
-    ports: # 开发环境测试验证
-      - "8081:80"
-      - "8082:443"
+    ports:
+      - "80:80"
+      - "443:443"
+    #ports: # 开发环境测试验证
+    #  - "8081:80"
+    #  - "8082:443"
     volumes:
       # `:ro` 等同于`read_only: true`
+      # 开发环境
       - ~/docker-apps/gateway/nginx.dev.conf:/etc/nginx/nginx.conf:ro # 开发环境测试验证
+      - ~/docker-apps/gateway/ssl:/etc/nginx/ssl:ro
+      # 生产环境
       # - ~/docker-apps/gateway/nginx.prod.conf:/etc/nginx/nginx.conf:ro # 生产环境
       # - ~/docker-apps/gateway/certs:/etc/nginx/ssl:ro
-      - ~/docker-apps/gateway/ssl:/etc/nginx/ssl:ro
     networks:
       - frontend-network
       - backend-network
       - storage-network
-
-  # gateway-prod:
-  #   image: nginx:stable
-  #   container_name: nginx-gateway-prod
-  #   restart: unless-stopped
-  #   # ports:
-  #   #   - "80:80"
-  #   #   - "443:443"
-  #   ports: # 开发环境测试验证
-  #     - "8090:80"
-  #   volumes:
-  #     # `:ro` 等同于`read_only: true`
-  #     - ~/docker-apps/gateway/nginx.prod.conf:/etc/nginx/nginx.conf:ro # 开发环境测试验证
-  #     # - ~/docker-apps/gateway/nginx.prod.conf:/etc/nginx/nginx.conf:ro # 生产环境
-  #     - ~/docker-apps/gateway/certs:/etc/nginx/ssl:ro
-  #   networks:
-  #     - frontend-network
-  #     - backend-network
-  #     - storage-network
 
   mongo: # 服务名称
     image: mongo:4.4

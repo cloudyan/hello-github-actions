@@ -159,9 +159,10 @@ docker network create storage-network  # 后端与存储通信
 
 ```bash
 docker ps -a
-docker logs nginx-gateway-dev
-docker exec nginx-gateway-dev ls -l /etc/nginx/ssl
-docker restart nginx-gateway-dev
+docker logs nginx-gateway
+docker exec nginx-gateway ls -l /etc/nginx/ssl
+docker restart nginx-gateway
+docker logs nginx-gateway
 
 cat ${HOME}/docker-apps/gateway/nginx.dev.conf
 
@@ -206,7 +207,31 @@ docker info | grep "Registry Mirrors"
     "https://docker.mirrors.sjtug.sjtu.edu.cn",
     "https://docker.mirrors.ustc.edu.cn",
     "https://mirror.iscas.ac.cn",
+    "https://mirror.ccs.tencentyun.com",
     "https://docker.rainbond.cc"
   ]
 }
+```
+
+## SSL 证书
+
+使用 acme.sh 来申请免费的 Let's Encrypt 证书
+
+```bash
+# 安装 acme.sh
+curl https://get.acme.sh | sh
+source ~/.bashrc
+
+# 申请SSL证书
+# acme.sh 会自动验证你的域名并为其申请证书。验证成功后，它会自动将证书安装到你的 Nginx 配置中。
+acme.sh --issue -d yourdomain.com --nginx
+curl https://get.acme.sh | sh -s email=your_email@example.com
+
+# 自动安装证书
+# 申请完证书后，运行以下命令来安装证书并更新 Nginx 配置：
+acme.sh --install-cert -d yourdomain.com \
+  --key-file       /etc/nginx/ssl/yourdomain.com.key \
+  --cert-file      /etc/nginx/ssl/yourdomain.com.cer \
+  --fullchain-file /etc/nginx/ssl/fullchain.cer \
+  --reloadcmd      "systemctl reload nginx"
 ```
